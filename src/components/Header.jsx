@@ -18,8 +18,10 @@ const Header = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('tokenExpiry');
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    localStorage.clear();
     showNotification('Successfully logged out', 'success');
     navigate('/login');
   };

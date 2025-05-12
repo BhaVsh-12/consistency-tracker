@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { useNotifications } from '../context/NotificationContext';
 import Api from '../../Api'; // Import your API module
 import { useAuth } from '../context/AuthContext';
+import { jwtDecode } from 'jwt-decode';
+
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -29,11 +31,14 @@ const LoginPage = () => {
       if (response.status >= 200 && response.status < 300) {
         localStorage.setItem('isAuthenticated', 'true');
         const token = response.data.token;
+        const decoded = jwtDecode(token);
+        const expiryTime = decoded.exp * 1000;
         const user = response.data.user; // Assuming your backend sends a token
         setAuthToken(token);
         setIsAuthenticated(true);
         localStorage.setItem('authToken', token); // Store the token
         localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('tokenExpiry', expiryTime);
         showNotification('Successfully logged in!', 'success');
         navigate('/');
       } else {

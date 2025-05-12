@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
@@ -7,31 +7,60 @@ import Notification from './components/Notification';
 import { GoalProvider } from './context/GoalContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { AuthProvider } from './context/AuthContext';
+
 const PrivateRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  const token = localStorage.getItem('authToken');
+  const expiry = localStorage.getItem('tokenExpiry');
+
+  const isTokenValid = () => {
+    if (!token || !expiry) return false;
+    return new Date().getTime() < Number(expiry);
+  };
+
+  return isTokenValid() ? children : <Navigate to="/login" />;
 };
 
 function App() {
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const expiry = localStorage.getItem('tokenExpiry');
+
+    if (token && expiry) {
+      const timeUntilExpiry = Number(expiry) - new Date().getTime();
+
+      if (timeUntilExpiry <= 0) {
+        
+        localStorage.clear();
+        window.location.href = '/login'; 
+      } else {
+
+        setTimeout(() => {
+          localStorage.clear();
+          window.location.href = '/login';  
+        }, timeUntilExpiry);
+      }
+    }
+  }, []);
+
   return (
     <BrowserRouter future={{ v7_startTransition: true }}>
       <NotificationProvider>
         <AuthProvider>
-        <GoalProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <HomePage />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
-          <Notification />
-        </GoalProvider>
+          <GoalProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <HomePage />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+            <Notification />
+          </GoalProvider>
         </AuthProvider>
       </NotificationProvider>
     </BrowserRouter>
