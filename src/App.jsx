@@ -21,26 +21,9 @@ const PrivateRoute = ({ children }) => {
 };
 
 function App() {
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const expiry = localStorage.getItem('tokenExpiry');
 
-    if (token && expiry) {
-      const timeUntilExpiry = Number(expiry) - new Date().getTime();
 
-      if (timeUntilExpiry <= 0) {
-        
-        localStorage.clear();
-        window.location.href = '/login'; 
-      } else {
 
-        setTimeout(() => {
-          localStorage.clear();
-          window.location.href = '/login';  
-        }, timeUntilExpiry);
-      }
-    }
-  }, []);
 
   return (
     <BrowserRouter future={{ v7_startTransition: true }}>
